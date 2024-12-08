@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Plumberz</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="css/style.css"> <!-- Optional: Custom styles -->
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebar" class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="sidebar-sticky">
+                    <h4 class="mt-4">Admin Panel</h4>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" id="dashboardLink">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#team" id="teamLink">Ekip</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#jobs" id="jobsLink">Yeni İşi Yönet</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2" id="dashboardTitle">Dashboard</h1>
+                </div>
+
+                <!-- Ekip Kısmı -->
+                <div id="team" class="mt-4">
+                    <h2>Ekibe Üye Ekle/Sil</h2>
+                    <form id="addEmployeeForm">
+                        <div class="mb-3">
+                            <input type="text" id="employeeName" class="form-control" placeholder="Çalışan Adı" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Çalışan Ekle</button>
+                    </form>
+                    <ul class="list-group mt-3" id="employeeList">
+                        <!-- Çalışan listesi buraya gelecek -->
+                    </ul>
+                </div>
+
+                <!-- Yeni İş Kısmı -->
+                <div id="jobs" class="mt-4">
+                    <h2>Yeni İş Ekle/Sil</h2>
+                    <form id="addJobForm">
+                        <div class="mb-3">
+                            <input type="text" id="jobTitle" class="form-control" placeholder="İş Başlığı" required>
+                            <input type="date" id="jobStartDate" class="form-control mt-2" required>
+                            <input type="date" id="jobEndDate" class="form-control mt-2" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">İş Ekle</button>
+                    </form>
+                    <ul class="list-group mt-3" id="jobList">
+                        <!-- İş listesi buraya gelecek -->
+                    </ul>
+                </div>
+
+                <!-- Dashboard Kısmı (Çalışanlara Göre İş Ekleme) -->
+                <div id="dashboard" class="mt-4">
+                    <h2>Çalışanlara Göre İş Ekle</h2>
+                    <form id="assignJobForm">
+                        <div class="mb-3">
+                            <label for="employeeSelect" class="form-label">Çalışan Seçin</label>
+                            <select id="employeeSelect" class="form-select" required>
+                                <option value="" disabled selected>Çalışan Seçin</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="jobSelect" class="form-label">İş Başlığı Seçin</label>
+                            <select id="jobSelect" class="form-select" required>
+                                <option value="" disabled selected>İş Başlığı Seçin</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <input type="date" id="dashboardJobStartDate" class="form-control mt-2" required>
+                            <input type="date" id="dashboardJobEndDate" class="form-control mt-2" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">İşi Atama</button>
+                    </form>
+                    <ul class="list-group mt-3" id="dashboardJobList">
+                        <!-- Çalışanlara atanmış işler buraya gelecek -->
+                    </ul>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+
+            // Ekip - Çalışan Ekleme
+            $('#addEmployeeForm').submit(function (e) {
+                e.preventDefault();
+                const employeeName = $('#employeeName').val();
+                $('#employeeList').append(`
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${employeeName}
+                        <button class="btn btn-danger btn-sm" onclick="removeEmployee(this)">Sil</button>
+                    </li>
+                `);
+                $('#employeeName').val('');
+
+                // Çalışan eklendikten sonra, dashboard kısmındaki seçim listesine ekleyelim
+                $('#employeeSelect').append(`<option value="${employeeName}">${employeeName}</option>`);
+            });
+
+            // Ekip - Çalışan Silme
+            window.removeEmployee = function(button) {
+                $(button).parent().remove();
+
+                // Çalışan silindiğinde, dashboard kısmındaki seçim listesinden de kaldıralım
+                const employeeName = $(button).parent().text().trim();
+                $('#employeeSelect option').each(function() {
+                    if ($(this).text() === employeeName) {
+                        $(this).remove();
+                    }
+                });
+            };
+
+            // Yeni İş - İş Ekleme
+            $('#addJobForm').submit(function (e) {
+                e.preventDefault();
+                const jobTitle = $('#jobTitle').val();
+                const jobStartDate = $('#jobStartDate').val();
+                const jobEndDate = $('#jobEndDate').val();
+
+                $('#jobList').append(`
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${jobTitle} - Başlangıç: ${new Date(jobStartDate).toLocaleDateString()} / Bitiş: ${new Date(jobEndDate).toLocaleDateString()}
+                        <button class="btn btn-danger btn-sm" onclick="removeJob(this)">Sil</button>
+                    </li>
+                `);
+
+                // Yeni eklenen iş başlığını dashboard bölümündeki seçim kutusuna da ekleyelim
+                $('#jobSelect').append(`<option value="${jobTitle}">${jobTitle}</option>`);
+
+                $('#jobTitle').val('');
+                $('#jobStartDate').val('');
+                $('#jobEndDate').val('');
+            });
+
+            // Yeni İş - İş Silme
+            window.removeJob = function(button) {
+                $(button).parent().remove();
+
+                // İş silindiğinde, dashboard kısmındaki iş başlığı seçim listesinden de kaldıralım
+                const jobTitle = $(button).parent().text().split(" - ")[0].trim();
+                $('#jobSelect option').each(function() {
+                    if ($(this).text() === jobTitle) {
+                        $(this).remove();
+                    }
+                });
+            };
+
+            // Dashboard - Çalışana Göre İş Atama
+            $('#assignJobForm').submit(function (e) {
+                e.preventDefault();
+                const employeeName = $('#employeeSelect').val();
+                const jobTitle = $('#jobSelect').val();
+                const jobStartDate = $('#dashboardJobStartDate').val();
+                const jobEndDate = $('#dashboardJobEndDate').val();
+
+                $('#dashboardJobList').append(`
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${employeeName} - ${jobTitle} - Başlangıç: ${new Date(jobStartDate).toLocaleDateString()} / Bitiş: ${new Date(jobEndDate).toLocaleDateString()}
+                        <button class="btn btn-danger btn-sm" onclick="removeAssignedJob(this)">Sil</button>
+                    </li>
+                `);
+
+                $('#dashboardJobTitle').val('');
+                $('#dashboardJobStartDate').val('');
+                $('#dashboardJobEndDate').val('');
+                $('#employeeSelect').val('');
+                $('#jobSelect').val('');
+            });
+
+            // Dashboard - Atanmış İş Silme
+            window.removeAssignedJob = function(button) {
+                $(button).parent().remove();
+            };
+
+            // Sayfa Navigasyonu - Ekip ve İş Yönetimi
+            $('#teamLink').click(function () {
+                $('#team').show();
+                $('#jobs').hide();
+                $('#dashboard').hide();
+                $('#dashboardTitle').text('Ekip Yönetimi');
+            });
+
+            $('#jobsLink').click(function () {
+                $('#jobs').show();
+                $('#team').hide();
+                $('#dashboard').hide();
+                $('#dashboardTitle').text('İş Yönetimi');
+            });
+
+            $('#dashboardLink').click(function () {
+                $('#dashboard').show();
+                $('#team').hide();
+                $('#jobs').hide();
+                $('#dashboardTitle').text('Dashboard - Çalışanlara Göre İş Ekle');
+            });
+
+            // Başlangıçta sadece Dashboard görünür, diğer kısımlar gizlidir.
+            $('#team').hide();
+            $('#jobs').hide();
+        });
+    </script>
+</body>
+
+</html>
